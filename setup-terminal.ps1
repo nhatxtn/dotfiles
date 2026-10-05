@@ -309,6 +309,34 @@ function Set-PoshTheme {
 function Get-PoshThemes {
     Write-Host "Available Oh My Posh themes:" -ForegroundColor Cyan
     Get-ChildItem "$HOME\.poshthemes\*.omp.json" | Select-Object @{Name="Theme";Expression={$_.Name -replace '\.omp\.json$', ''}}
+    Write-Host "`nTo download more themes: Install-PoshTheme [theme-name]" -ForegroundColor Yellow
+    Write-Host "Browse 100+ official themes: https://ohmyposh.dev/docs/themes" -ForegroundColor Green
+}
+
+function Install-PoshTheme {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$false)]
+        [string]$Name
+    )
+    if (-not $Name) {
+        Write-Host "Usage: Install-PoshTheme [theme-name]" -ForegroundColor Yellow
+        Write-Host "Example: Install-PoshTheme dracula" -ForegroundColor Cyan
+        Write-Host "Browse 100+ themes with previews at: https://ohmyposh.dev/docs/themes" -ForegroundColor Green
+        return
+    }
+    $cleanName = $Name -replace '\.omp\.json$', ''
+    $url = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/$cleanName.omp.json"
+    $target = "$HOME\.poshthemes\$cleanName.omp.json"
+    Write-Host "Downloading theme '$cleanName' from official Oh My Posh repo..." -ForegroundColor Yellow
+    try {
+        Invoke-WebRequest -Uri $url -OutFile $target -UseBasicParsing -TimeoutSec 15
+        Write-Host "[OK] Theme '$cleanName' downloaded successfully!" -ForegroundColor Green
+        Write-Host "To apply it now, run: Set-PoshTheme $cleanName" -ForegroundColor Cyan
+    } catch {
+        Write-Host "Error: Could not find theme '$cleanName'." -ForegroundColor Red
+        Write-Host "Browse all official themes at: https://ohmyposh.dev/docs/themes" -ForegroundColor Yellow
+    }
 }
 
 # Developer Aliases & Shortcuts

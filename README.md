@@ -32,6 +32,7 @@ irm https://raw.githubusercontent.com/nhatxtn/dotfiles/main/setup-terminal.ps1 |
 | `↑` / `↓` | Filter and cycle through command history matching typed prefix |
 | `Ctrl + r` | Interactive full history search |
 | `Get-PoshThemes` | List all downloaded Oh My Posh themes |
+| `Install-PoshTheme <name>` | Download any official theme by name (`dracula`, `agnoster`, `nord`,...) |
 | `Set-PoshTheme <name>` | Switch theme instantly (`catppuccin`, `tokyonight_storm`, `atomic`,...) |
 | `Set-SuggestionStyle` | Change default prediction style (`-Style List` or `-Style Inline`) |
 | `reload` | Reload PowerShell profile immediately |
