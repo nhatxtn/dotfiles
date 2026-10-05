@@ -42,13 +42,20 @@ if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
     Write-Host "[OK] PowerShell 7 is ready." -ForegroundColor Green
 }
 
-# 4. Install required PowerShell modules
+# 4. Install and upgrade required PowerShell modules
 Write-Host ""
 Write-Host "[4/7] Installing supporting modules (Terminal-Icons, posh-git, PSReadLine)..." -ForegroundColor Cyan
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
-$modules = @("Terminal-Icons", "posh-git", "PSReadLine")
+# Ensure PSReadLine is updated to 2.2+ (Older Windows 10/11 comes with 2.0 which lacks Predictive IntelliSense)
+$currentPsr = Get-Module -ListAvailable -Name PSReadLine | Sort-Object Version -Descending | Select-Object -First 1
+if (-not $currentPsr -or $currentPsr.Version -lt [Version]'2.2.0') {
+    Write-Host "Upgrading PSReadLine to latest version for predictive suggestions..." -ForegroundColor Yellow
+    Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction SilentlyContinue
+}
+
+$modules = @("Terminal-Icons", "posh-git")
 if ($PSVersionTable.PSEdition -eq "Core") {
     $modules += "CompletionPredictor"
 }
@@ -139,46 +146,39 @@ if ($PSVersionTable.PSEdition -eq "Core") {
 if (Get-Module -ListAvailable -Name PSReadLine) {
     Import-Module PSReadLine -ErrorAction SilentlyContinue
 
-    try {
-        if ($PSVersionTable.PSEdition -eq "Core") {
-            Set-PSReadLineOption -PredictionSource HistoryAndPlugin -ErrorAction Stop
-        } else {
-            Set-PSReadLineOption -PredictionSource History -ErrorAction Stop
-        }
-
-        $viewPrefFile = "$HOME\.poshthemes\prediction_style.txt"
-        $viewStyle = "ListView"
-        if (Test-Path $viewPrefFile) {
-            $savedStyle = (Get-Content $viewPrefFile -Raw -ErrorAction SilentlyContinue).Trim()
-            if ($savedStyle -in @("InlineView", "ListView")) {
-                $viewStyle = $savedStyle
+    $psr = Get-Module PSReadLine
+    if ($psr -and $psr.Version -ge [Version]'2.2.0') {
+        try {
+            if ($PSVersionTable.PSEdition -eq "Core") {
+                Set-PSReadLineOption -PredictionSource HistoryAndPlugin -ErrorAction Stop
+            } else {
+                Set-PSReadLineOption -PredictionSource History -ErrorAction Stop
             }
-        }
-        Set-PSReadLineOption -PredictionViewStyle $viewStyle -ErrorAction Stop
-    } catch {}
 
-    # Clear visible color for inline ghost text
-    Set-PSReadLineOption -Colors @{
-        InlinePrediction = "$([char]0x1b)[38;5;246m"
-    } -ErrorAction SilentlyContinue
+            $viewPrefFile = "$HOME\.poshthemes\prediction_style.txt"
+            $viewStyle = "ListView"
+            if (Test-Path $viewPrefFile) {
+                $savedStyle = (Get-Content $viewPrefFile -Raw -ErrorAction SilentlyContinue).Trim()
+                if ($savedStyle -in @("InlineView", "ListView")) {
+                    $viewStyle = $savedStyle
+                }
+            }
+            Set-PSReadLineOption -PredictionViewStyle $viewStyle -ErrorAction Stop
+            Set-PSReadLineOption -Colors @{
+                InlinePrediction = "$([char]0x1b)[38;5;246m"
+            } -ErrorAction SilentlyContinue
+            Set-PSReadLineKeyHandler -Key F2 -Function SwitchPredictionView -ErrorAction SilentlyContinue
+            Set-PSReadLineKeyHandler -Key "Ctrl+RightArrow" -Function AcceptNextSuggestionWord -ErrorAction SilentlyContinue
+        } catch {}
+    }
 
-    # Smart Keybindings
-    # - Tab: Autocomplete and open interactive dropdown menu (MenuComplete)
-    # - Ctrl + Space: Open interactive completion menu
-    # - Up / Down Arrow: Filter history matching current typed prefix
-    # - Right Arrow / End: Accept full suggestion
-    # - Ctrl + Right Arrow: Accept suggestion word-by-word
-    # - Ctrl + f: Accept full suggestion
-    # - F2: Toggle between InlineView (ghost text) and ListView (menu box)
-    # - Ctrl + r: Interactive history search
+    # Universal Keybindings (Supported across all PSReadLine versions)
     Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Chord "Ctrl+Spacebar" -Function MenuComplete -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Key RightArrow -Function ForwardChar -ErrorAction SilentlyContinue
-    Set-PSReadLineKeyHandler -Key "Ctrl+RightArrow" -Function AcceptNextSuggestionWord -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Chord "Ctrl+f" -Function AcceptSuggestion -ErrorAction SilentlyContinue
-    Set-PSReadLineKeyHandler -Key F2 -Function SwitchPredictionView -ErrorAction SilentlyContinue
 }
 
 # Oh My Posh Prompt
