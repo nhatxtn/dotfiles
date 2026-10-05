@@ -1,19 +1,19 @@
 # 🚀 Windows Terminal & PowerShell Dotfiles
 
-Script tự động thiết lập môi trường Terminal hiện đại cho lập trình viên trên Windows:
-- **Oh My Posh**: Prompt theme engine tuyệt đẹp (mặc định Catppuccin, tích hợp Git status, Python venv, execution time).
-- **MesloLGM Nerd Font**: Hiển thị đầy đủ glyphs/icons lập trình.
-- **PowerShell 7**: Phiên bản PowerShell mới nhất, tốc độ cao.
-- **PSReadLine 2.4.5**: Gợi ý lệnh thông minh theo lịch sử (Predictive IntelliSense), chuyển đổi linh hoạt giữa dòng mờ (`InlineView`) và menu danh sách (`ListView`) bằng phím `F2`.
-- **posh-git**: Tự động gợi ý mọi lệnh Git, nhánh (branches), cờ (flags) với menu trực quan khi bấm `Tab` / `Ctrl + Space`.
-- **Terminal-Icons**: Tự động hiển thị icon thư mục và file khi gõ lệnh.
-- **Windows Terminal & VS Code**: Tự động cấu hình font `MesloLGM Nerd Font` đồng bộ.
+Automated setup script for a modern, beautiful, and developer-friendly terminal environment on Windows:
+- **Oh My Posh**: Beautiful prompt theme engine (defaults to Catppuccin, includes Git branch/status, Python venv, execution time).
+- **MesloLGM Nerd Font**: Full glyphs and developer icons support.
+- **PowerShell 7**: Modern, cross-platform, high-performance PowerShell.
+- **PSReadLine 2.4.5**: Intelligent Predictive IntelliSense with history suggestions, seamlessly toggleable between ghost text (`InlineView`) and dropdown list (`ListView`) with the `F2` key.
+- **posh-git**: Comprehensive Git autocomplete for commands, branches, and flags with an interactive menu on `Tab` / `Ctrl + Space`.
+- **Terminal-Icons**: Colorized folder and file icons in directory listings.
+- **Windows Terminal & VS Code**: Automatically configured with `MesloLGM Nerd Font`.
 
 ---
 
-## ⚡ Cài đặt nhanh bằng 1 dòng lệnh
+## ⚡ Quick 1-Line Installation
 
-Mở **PowerShell** và chạy lệnh sau:
+Open **PowerShell** and run:
 
 ```powershell
 irm https://raw.githubusercontent.com/nhatxtn/dotfiles/main/setup-terminal.ps1 | iex
@@ -21,18 +21,19 @@ irm https://raw.githubusercontent.com/nhatxtn/dotfiles/main/setup-terminal.ps1 |
 
 ---
 
-## 🛠️ Phím tắt & Lệnh tiện ích
+## 🛠️ Keybindings & Helper Commands
 
-| Phím tắt / Lệnh | Mô tả |
+| Shortcut / Command | Description |
 |---|---|
-| `Tab` hoặc `Ctrl + Space` | Mở menu tương tác chọn lệnh Git / tham số |
-| `F2` | Đổi qua lại giữa `ListView` (menu lịch sử) và `InlineView` (dòng chữ mờ) |
-| `→` hoặc `Ctrl + f` | Nhận toàn bộ câu lệnh gợi ý |
-| `Ctrl + →` | Nhận gợi ý theo từng từ một |
-| `↑` / `↓` | Lọc và tìm lại các lệnh lịch sử theo từ khóa đã gõ |
-| `Ctrl + r` | Tìm kiếm tương tác trong toàn bộ lịch sử lệnh |
-| `Get-PoshThemes` | Xem danh sách các theme Oh My Posh đã tải |
-| `Set-PoshTheme <name>` | Đổi theme tức thì (`catppuccin`, `tokyonight_storm`, `atomic`,...) |
-| `Set-SuggestionStyle` | Chọn kiểu hiển thị gợi ý (`-Style List` hoặc `-Style Inline`) |
-| `reload` | Tải lại cấu hình PowerShell profile ngay lập tức |
-| `ll` | Xem danh sách file/thư mục kèm icons |
+| `Tab` or `Ctrl + Space` | Open interactive menu to pick Git commands / arguments |
+| `F2` | Toggle between `ListView` (menu box) and `InlineView` (ghost text) |
+| `→` or `Ctrl + f` | Accept entire suggestion |
+| `Ctrl + →` | Accept suggestion word-by-word |
+| `↑` / `↓` | Filter and cycle through command history matching typed prefix |
+| `Ctrl + r` | Interactive full history search |
+| `Get-PoshThemes` | List all downloaded Oh My Posh themes |
+| `Set-PoshTheme <name>` | Switch theme instantly (`catppuccin`, `tokyonight_storm`, `atomic`,...) |
+| `Set-SuggestionStyle` | Change default prediction style (`-Style List` or `-Style Inline`) |
+| `reload` | Reload PowerShell profile immediately |
+| `ll` | List files and directories with icons |
+| `g` | Alias for `git` |

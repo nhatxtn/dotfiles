@@ -7,39 +7,39 @@
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host " 🚀 BẮT ĐẦU THIẾT LẬP TERMINAL CHO CODING (OH MY POSH)" -ForegroundColor Yellow
+Write-Host " 🚀 STARTING TERMINAL SETUP FOR CODING (OH MY POSH)" -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Cài đặt Oh My Posh qua winget
-Write-Host "`n[1/7] Kiểm tra và cài đặt Oh My Posh..." -ForegroundColor Cyan
+# 1. Install Oh My Posh via winget
+Write-Host "`n[1/7] Checking and installing Oh My Posh..." -ForegroundColor Cyan
 if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
-    Write-Host "Đang cài đặt Oh My Posh qua winget..." -ForegroundColor Yellow
+    Write-Host "Installing Oh My Posh via winget..." -ForegroundColor Yellow
     winget install JanDeDobbeleer.OhMyPosh -s winget --accept-source-agreements --accept-package-agreements
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 } else {
-    Write-Host "✓ Oh My Posh đã được cài đặt." -ForegroundColor Green
+    Write-Host "✓ Oh My Posh is already installed." -ForegroundColor Green
 }
 
-# 2. Cài đặt Meslo Nerd Font
-Write-Host "`n[2/7] Kiểm tra và cài đặt Meslo Nerd Font..." -ForegroundColor Cyan
+# 2. Install Meslo Nerd Font
+Write-Host "`n[2/7] Checking and installing Meslo Nerd Font..." -ForegroundColor Cyan
 try {
     oh-my-posh font install Meslo
-    Write-Host "✓ Meslo Nerd Font đã được cài đặt." -ForegroundColor Green
+    Write-Host "✓ Meslo Nerd Font installed successfully." -ForegroundColor Green
 } catch {
-    Write-Host "Bỏ qua bước font hoặc đã có sẵn." -ForegroundColor Yellow
+    Write-Host "Skipping font step or already available." -ForegroundColor Yellow
 }
 
-# 3. Cài đặt PowerShell 7 (nếu đang chạy trên Windows PowerShell cũ)
-Write-Host "`n[3/7] Kiểm tra PowerShell 7..." -ForegroundColor Cyan
+# 3. Install PowerShell 7 (if running on legacy Windows PowerShell)
+Write-Host "`n[3/7] Checking PowerShell 7..." -ForegroundColor Cyan
 if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
-    Write-Host "Đang cài đặt PowerShell 7 qua winget..." -ForegroundColor Yellow
+    Write-Host "Installing PowerShell 7 via winget..." -ForegroundColor Yellow
     winget install Microsoft.PowerShell -s winget --accept-source-agreements --accept-package-agreements
 } else {
-    Write-Host "✓ PowerShell 7 đã sẵn sàng." -ForegroundColor Green
+    Write-Host "✓ PowerShell 7 is ready." -ForegroundColor Green
 }
 
-# 4. Cài đặt các PowerShell Modules cần thiết
-Write-Host "`n[4/7] Cài đặt các module hỗ trợ (Terminal-Icons, posh-git, PSReadLine)..." -ForegroundColor Cyan
+# 4. Install required PowerShell modules
+Write-Host "`n[4/7] Installing supporting modules (Terminal-Icons, posh-git, PSReadLine)..." -ForegroundColor Cyan
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
@@ -50,15 +50,15 @@ if ($PSVersionTable.PSEdition -eq "Core") {
 
 foreach ($mod in $modules) {
     if (-not (Get-Module -ListAvailable -Name $mod)) {
-        Write-Host "Đang cài module: $mod..." -ForegroundColor Yellow
+        Write-Host "Installing module: $mod..." -ForegroundColor Yellow
         Install-Module -Name $mod -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction SilentlyContinue
     } else {
-        Write-Host "✓ Module $mod đã có sẵn." -ForegroundColor Green
+        Write-Host "✓ Module $mod is already installed." -ForegroundColor Green
     }
 }
 
-# 5. Tải bộ theme Oh My Posh phổ biến
-Write-Host "`n[5/7] Tải các theme Oh My Posh đẹp vào ~/.poshthemes..." -ForegroundColor Cyan
+# 5. Download popular Oh My Posh themes
+Write-Host "`n[5/7] Downloading popular Oh My Posh themes into ~/.poshthemes..." -ForegroundColor Cyan
 $themesDir = "$HOME\.poshthemes"
 if (-not (Test-Path $themesDir)) { New-Item -ItemType Directory -Path $themesDir -Force | Out-Null }
 $popularThemes = @("catppuccin", "tokyonight_storm", "atomic", "bubbles", "clean-detailed", "jandedobbeleer")
@@ -70,10 +70,10 @@ foreach ($t in $popularThemes) {
         } catch {}
     }
 }
-Write-Host "✓ Đã tải xong bộ theme." -ForegroundColor Green
+Write-Host "✓ Themes downloaded successfully." -ForegroundColor Green
 
-# 6. Cấu hình Windows Terminal & VS Code dùng MesloLGM Nerd Font
-Write-Host "`n[6/7] Áp dụng font MesloLGM Nerd Font cho Windows Terminal & VS Code..." -ForegroundColor Cyan
+# 6. Configure Windows Terminal & VS Code to use MesloLGM Nerd Font
+Write-Host "`n[6/7] Applying MesloLGM Nerd Font to Windows Terminal & VS Code..." -ForegroundColor Cyan
 # Windows Terminal
 $wtSettings = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 if (Test-Path $wtSettings) {
@@ -82,7 +82,7 @@ if (Test-Path $wtSettings) {
         if ($content -notmatch '"face":\s*"MesloLGM Nerd Font"') {
             $content = $content -replace '"defaults":\s*\{', '"defaults": { "font": { "face": "MesloLGM Nerd Font", "size": 11 }'
             Set-Content -Path $wtSettings -Value $content -Encoding utf8
-            Write-Host "✓ Đã cập nhật font cho Windows Terminal." -ForegroundColor Green
+            Write-Host "✓ Font updated for Windows Terminal." -ForegroundColor Green
         }
     } catch {}
 }
@@ -95,13 +95,13 @@ if (Test-Path $vscodeSettings) {
         if (-not $vJson.'terminal.integrated.fontFamily') {
             $vJson | Add-Member -MemberType NoteProperty -Name "terminal.integrated.fontFamily" -Value "MesloLGM Nerd Font"
             $vJson | ConvertTo-Json -Depth 32 | Set-Content -Path $vscodeSettings -Encoding utf8
-            Write-Host "✓ Đã cập nhật font cho VS Code Terminal." -ForegroundColor Green
+            Write-Host "✓ Font updated for VS Code Terminal." -ForegroundColor Green
         }
     } catch {}
 }
 
-# 7. Tạo file Profile PowerShell hoàn chỉnh
-Write-Host "`n[7/7] Cài đặt file cấu hình PowerShell Profile..." -ForegroundColor Cyan
+# 7. Generate complete PowerShell Profile
+Write-Host "`n[7/7] Installing PowerShell Profile configuration..." -ForegroundColor Cyan
 $profileScript = @'
 # ====================================================================
 # Modern Developer Profile (Oh My Posh + Predictive IntelliSense + Posh-Git)
@@ -115,7 +115,7 @@ if (Get-Module -ListAvailable -Name Terminal-Icons) {
     Import-Module Terminal-Icons -ErrorAction SilentlyContinue
 }
 
-# Posh-Git (Gợi ý lệnh Git, branch, flags)
+# Posh-Git (Autocomplete Git commands, branches, and flags)
 if (Get-Module -ListAvailable -Name posh-git) {
     Import-Module posh-git -ErrorAction SilentlyContinue
 }
@@ -149,11 +149,20 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
         Set-PSReadLineOption -PredictionViewStyle $viewStyle -ErrorAction Stop
     } catch {}
 
+    # Clear visible color for inline ghost text
     Set-PSReadLineOption -Colors @{
         InlinePrediction = "$([char]0x1b)[38;5;246m"
     } -ErrorAction SilentlyContinue
 
-    # Phím tắt
+    # Smart Keybindings
+    # - Tab: Autocomplete and open interactive dropdown menu (MenuComplete)
+    # - Ctrl + Space: Open interactive completion menu
+    # - Up / Down Arrow: Filter history matching current typed prefix
+    # - Right Arrow / End: Accept full suggestion
+    # - Ctrl + Right Arrow: Accept suggestion word-by-word
+    # - Ctrl + f: Accept full suggestion
+    # - F2: Toggle between 'InlineView' (ghost text) and 'ListView' (menu box)
+    # - Ctrl + r: Interactive history search
     Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Chord "Ctrl+Spacebar" -Function MenuComplete -ErrorAction SilentlyContinue
     Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward -ErrorAction SilentlyContinue
@@ -164,7 +173,7 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
     Set-PSReadLineKeyHandler -Key F2 -Function SwitchPredictionView -ErrorAction SilentlyContinue
 }
 
-# Oh My Posh
+# Oh My Posh Prompt
 $env:POSH_THEMES_PATH = "$HOME\.poshthemes"
 $currentThemeFile = "$HOME\.poshthemes\current_theme.txt"
 $themeName = "catppuccin"
@@ -185,7 +194,7 @@ if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
     }
 }
 
-# Tiện ích đổi giao diện
+# Theme & Suggestion Utilities
 function Set-SuggestionStyle {
     [CmdletBinding()]
     param(
@@ -194,16 +203,16 @@ function Set-SuggestionStyle {
         [string]$Style
     )
     if (-not $Style) {
-        Write-Host "Cú pháp: Set-SuggestionStyle -Style <Inline | List>" -ForegroundColor Yellow
-        Write-Host "  - Inline: Dòng chữ mờ tiếp sau con trỏ" -ForegroundColor Cyan
-        Write-Host "  - List:   Menu danh sách lịch sử lệnh bên dưới" -ForegroundColor Cyan
-        Write-Host "Mẹo: Bạn có thể bấm phím F2 khi đang gõ để đổi qua lại tức thì!" -ForegroundColor Green
+        Write-Host "Usage: Set-SuggestionStyle -Style <Inline | List>" -ForegroundColor Yellow
+        Write-Host "  - Inline: Dim ghost text following cursor" -ForegroundColor Cyan
+        Write-Host "  - List:   Interactive dropdown menu below prompt" -ForegroundColor Cyan
+        Write-Host "Tip: Press F2 while typing to toggle anytime!" -ForegroundColor Green
         return
     }
     $targetStyle = if ($Style -match "List") { "ListView" } else { "InlineView" }
     Set-PSReadLineOption -PredictionViewStyle $targetStyle
     Set-Content -Path "$HOME\.poshthemes\prediction_style.txt" -Value $targetStyle -Force
-    Write-Host "Đã chuyển kiểu gợi ý thành: $targetStyle" -ForegroundColor Green
+    Write-Host "Suggestion style set to: $targetStyle" -ForegroundColor Green
 }
 
 function Set-PoshTheme {
@@ -211,29 +220,29 @@ function Set-PoshTheme {
     param([string]$Name)
     $themes = Get-ChildItem "$HOME\.poshthemes\*.omp.json" -ErrorAction SilentlyContinue | ForEach-Object { $_.Name -replace '\.omp\.json$', '' }
     if (-not $Name) {
-        Write-Host "Cú pháp: Set-PoshTheme <tên-theme>" -ForegroundColor Yellow
-        Write-Host "Các theme có sẵn: $($themes -join ', ')" -ForegroundColor Cyan
+        Write-Host "Usage: Set-PoshTheme <theme-name>" -ForegroundColor Yellow
+        Write-Host "Available themes: $($themes -join ', ')" -ForegroundColor Cyan
         return
     }
     $target = "$HOME\.poshthemes\$Name.omp.json"
     if (Test-Path $target) {
         Set-Content -Path "$HOME\.poshthemes\current_theme.txt" -Value $Name -Force
-        Write-Host "Đã chọn theme '$Name'! Đang tải lại..." -ForegroundColor Green
+        Write-Host "Theme changed to '$Name'! Reloading profile..." -ForegroundColor Green
         . $PROFILE
     } else {
-        Write-Host "Không tìm thấy theme '$Name'." -ForegroundColor Red
-        Write-Host "Các theme có sẵn: $($themes -join ', ')" -ForegroundColor Yellow
+        Write-Host "Theme '$Name' not found." -ForegroundColor Red
+        Write-Host "Available themes: $($themes -join ', ')" -ForegroundColor Yellow
     }
 }
 
 function Get-PoshThemes {
-    Write-Host "Danh sách theme Oh My Posh:" -ForegroundColor Cyan
-    Get-ChildItem "$HOME\.poshthemes\*.omp.json" | Select-Object @{Name="Tên Theme";Expression={$_.Name -replace '\.omp\.json$', ''}}
+    Write-Host "Available Oh My Posh themes:" -ForegroundColor Cyan
+    Get-ChildItem "$HOME\.poshthemes\*.omp.json" | Select-Object @{Name="Theme";Expression={$_.Name -replace '\.omp\.json$', ''}}
 }
 
-# Phím tắt
+# Developer Aliases & Shortcuts
 Set-Alias -Name g -Value git -Option AllScope -ErrorAction SilentlyContinue
-function reload { . $PROFILE; Write-Host "Đã tải lại profile!" -ForegroundColor Green }
+function reload { . $PROFILE; Write-Host "Profile reloaded!" -ForegroundColor Green }
 function ll { Get-ChildItem $args }
 '@
 
@@ -256,6 +265,6 @@ if (Test-Path $localDocs) {
 }
 
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host " 🎉 HOÀN TẤT THIẾT LẬP MÔI TRƯỜNG TERMINAL!" -ForegroundColor Green
-Write-Host " Hãy mở một tab Windows Terminal mới để trải nghiệm." -ForegroundColor Yellow
+Write-Host " 🎉 TERMINAL ENVIRONMENT SETUP COMPLETED!" -ForegroundColor Green
+Write-Host " Please open a new Windows Terminal tab to enjoy." -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Green
