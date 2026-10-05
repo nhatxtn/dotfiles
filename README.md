@@ -37,3 +37,12 @@ irm https://raw.githubusercontent.com/nhatxtn/dotfiles/main/setup-terminal.ps1 |
 | `reload` | Reload PowerShell profile immediately |
 | `ll` | List files and directories with icons |
 | `g` | Alias for `git` |
+
+---
+
+## 📖 Troubleshooting & Corporate Laptop Setup
+
+Encountering errors on restricted company laptops or clean Windows machines (such as `ExecutionPolicy` script blocks, `oh-my-posh is not recognized`, font errors, or `InlinePrediction` color issues)?
+
+👉 See the complete **[Troubleshooting & Known Issues Guide](TROUBLESHOOTING.md)** for root causes, zero-admin workarounds, and step-by-step fixes.
+
