@@ -1,23 +1,49 @@
 # ====================================================================
 # ONE-CLICK MODERN TERMINAL SETUP SCRIPT FOR WINDOWS
 # (Oh My Posh + Meslo Nerd Font + PowerShell 7 + Smart Autocomplete)
+# Works on all machines, including restricted corporate laptops!
 # ====================================================================
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host " [*] STARTING TERMINAL SETUP FOR CODING (OH MY POSH)" -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Install Oh My Posh via winget
+# 1. Install Oh My Posh
 Write-Host ""
 Write-Host "[1/7] Checking and installing Oh My Posh..." -ForegroundColor Cyan
 if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing Oh My Posh via winget..." -ForegroundColor Yellow
-    winget install JanDeDobbeleer.OhMyPosh -s winget --accept-source-agreements --accept-package-agreements
+    # Try winget first
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "Attempting install via winget..." -ForegroundColor Yellow
+        winget install JanDeDobbeleer.OhMyPosh -s winget --accept-source-agreements --accept-package-agreements 2>$null
+    }
+    
+    # Reload PATH
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+    # If still not found (common on corporate machines without winget), download binary directly
+    if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
+        Write-Host "Downloading Oh My Posh binary directly (No-Admin required)..." -ForegroundColor Yellow
+        $binDir = "$HOME\AppData\Local\Programs\oh-my-posh\bin"
+        if (-not (Test-Path $binDir)) { New-Item -ItemType Directory -Path $binDir -Force | Out-Null }
+        $exePath = Join-Path $binDir "oh-my-posh.exe"
+        try {
+            Invoke-WebRequest -Uri "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-windows-amd64.exe" -OutFile $exePath -UseBasicParsing -TimeoutSec 30
+            $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+            if ($userPath -notlike "*$binDir*") {
+                [Environment]::SetEnvironmentVariable("Path", "$userPath;$binDir", "User")
+            }
+            $env:Path += ";$binDir"
+            Write-Host "[OK] Oh My Posh downloaded to $binDir" -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to download Oh My Posh: $_" -ForegroundColor Red
+        }
+    }
 } else {
     Write-Host "[OK] Oh My Posh is already installed." -ForegroundColor Green
 }
@@ -25,19 +51,57 @@ if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
 # 2. Install Meslo Nerd Font
 Write-Host ""
 Write-Host "[2/7] Checking and installing Meslo Nerd Font..." -ForegroundColor Cyan
+$fontInstalled = $false
 try {
-    oh-my-posh font install Meslo
-    Write-Host "[OK] Meslo Nerd Font installed successfully." -ForegroundColor Green
-} catch {
-    Write-Host "Skipping font step or already available." -ForegroundColor Yellow
+    $fontKeys = (Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue).psobject.properties.Name
+    if ($fontKeys -match "Meslo") { $fontInstalled = $true }
+} catch {}
+
+if (-not $fontInstalled) {
+    $success = $false
+    # Try CLI font install
+    if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+        try {
+            oh-my-posh font install Meslo
+            $success = $true
+            Write-Host "[OK] Meslo Nerd Font installed via oh-my-posh." -ForegroundColor Green
+        } catch {}
+    }
+    
+    # Fallback direct download for corporate laptops
+    if (-not $success) {
+        Write-Host "Downloading Meslo Nerd Font directly (User scope, No-Admin)..." -ForegroundColor Yellow
+        try {
+            $fontDir = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
+            if (-not (Test-Path $fontDir)) { New-Item -ItemType Directory -Path $fontDir -Force | Out-Null }
+            $tempZip = "$env:TEMP\Meslo.zip"
+            $tempFolder = "$env:TEMP\MesloFont"
+            Invoke-WebRequest -Uri "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip" -OutFile $tempZip -UseBasicParsing -TimeoutSec 60
+            Expand-Archive -Path $tempZip -DestinationPath $tempFolder -Force
+            Get-ChildItem "$tempFolder\*.ttf" | ForEach-Object {
+                Copy-Item $_.FullName -Destination $fontDir -Force
+                New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" -Name "$($_.BaseName) (TrueType)" -Value $_.Name -Force | Out-Null
+            }
+            Remove-Item $tempZip, $tempFolder -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "[OK] Meslo Nerd Font installed to user font directory." -ForegroundColor Green
+        } catch {
+            Write-Host "Notice: Font download skipped. You can manually install Meslo.zip if needed." -ForegroundColor Yellow
+        }
+    }
+} else {
+    Write-Host "[OK] Meslo Nerd Font is already installed." -ForegroundColor Green
 }
 
-# 3. Install PowerShell 7 (if running on legacy Windows PowerShell)
+# 3. Check PowerShell 7
 Write-Host ""
 Write-Host "[3/7] Checking PowerShell 7..." -ForegroundColor Cyan
 if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing PowerShell 7 via winget..." -ForegroundColor Yellow
-    winget install Microsoft.PowerShell -s winget --accept-source-agreements --accept-package-agreements
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "Installing PowerShell 7 via winget..." -ForegroundColor Yellow
+        winget install Microsoft.PowerShell -s winget --accept-source-agreements --accept-package-agreements 2>$null
+    } else {
+        Write-Host "PowerShell 7 not found. Continuing with current PowerShell version." -ForegroundColor Yellow
+    }
 } else {
     Write-Host "[OK] PowerShell 7 is ready." -ForegroundColor Green
 }
@@ -45,10 +109,9 @@ if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
 # 4. Install and upgrade required PowerShell modules
 Write-Host ""
 Write-Host "[4/7] Installing supporting modules (Terminal-Icons, posh-git, PSReadLine)..." -ForegroundColor Cyan
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
-# Ensure PSReadLine is updated to 2.2+ (Older Windows 10/11 comes with 2.0 which lacks Predictive IntelliSense)
+# Ensure PSReadLine is updated to 2.2+ (Windows 10/11 defaults to 2.0 which lacks Predictive IntelliSense)
 $currentPsr = Get-Module -ListAvailable -Name PSReadLine | Sort-Object Version -Descending | Select-Object -First 1
 if (-not $currentPsr -or $currentPsr.Version -lt [Version]'2.2.0') {
     Write-Host "Upgrading PSReadLine to latest version for predictive suggestions..." -ForegroundColor Yellow
